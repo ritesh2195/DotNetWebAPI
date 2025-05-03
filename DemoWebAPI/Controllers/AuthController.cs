@@ -14,15 +14,19 @@ namespace DemoWebAPI.Controllers
     {
         private readonly IConfiguration _config;
 
+        private IJwtTokenService _jwtTokenService;
+
         private DbContext _dataContextEF;
-        public AuthController(IConfiguration config)
+        public AuthController(IConfiguration config, IJwtTokenService jwtTokenService)
         {
             _config = config;
+
+            _jwtTokenService = jwtTokenService;
 
             _dataContextEF = new DbContext(config);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public IActionResult RegisterUser(UserRegistrationDto registrationDto)
         {
             if (registrationDto == null)
@@ -48,8 +52,9 @@ namespace DemoWebAPI.Controllers
                 return BadRequest(new
                 {
                     statusCode = 400,
-                    errorMessage = "Password and Confirm Password do not match" });
-                }
+                    errorMessage = "Password and Confirm Password do not match"
+                });
+            }
 
             AuthMaster? auth = _dataContextEF.AuthMasters
                 .Where(x => x.Email == registrationDto.Email)
@@ -130,10 +135,12 @@ namespace DemoWebAPI.Controllers
 
             if (passwordHash.SequenceEqual(auth.PasswordHash))
             {
+                string jwtToken = _jwtTokenService.GenerateToken(auth.Email);
+
                 return Ok(new
                 {
-                    statusCode = 200,
-                    message = "Login successful"
+                    message = "Login successful",
+                    token = jwtToken,
                 });
             }
             else

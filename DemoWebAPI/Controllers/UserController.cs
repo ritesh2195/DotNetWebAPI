@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using DemoWebAPI.Data;
 using DemoWebAPI.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DemoWebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private DbContext _dataContextEF;
