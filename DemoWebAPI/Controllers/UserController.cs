@@ -11,18 +11,19 @@ namespace DemoWebAPI.Controllers
     {
         private DataContextEF _dataContextEF;
 
-        public UserController(IConfiguration config)
+        IUserRepository _userRepository;
+
+        public UserController(IConfiguration config, IUserRepository userRepository)
         {
             _dataContextEF = new DataContextEF(config);
+
+            _userRepository = userRepository;
         }
 
         [HttpGet]
         public IEnumerable<User> GetUser()
         {
-            List<User> users = _dataContextEF
-                .Users
-                .Where(x => x.IsDeleted == false)
-                .ToList();
+            IEnumerable<User> users = _userRepository.GetUsers();
 
             return users;
         }
@@ -31,9 +32,7 @@ namespace DemoWebAPI.Controllers
         public IActionResult GetUserById(int id)
         {
 
-            User? user = _dataContextEF.Users
-                .Where(x => x.UserMasterId == id && x.IsDeleted == false)
-                .FirstOrDefault();
+            User? user = _userRepository.GetUserById(id);
 
             if (user == null)
             {
@@ -62,9 +61,9 @@ namespace DemoWebAPI.Controllers
             userDb.IsActive = userDto.IsActive;
             userDb.IsDeleted = false;
 
-            _dataContextEF.Add(userDb);
+            _userRepository.AddEntity<User>(userDb);
 
-            if (_dataContextEF.SaveChanges() > 0)
+            if (_userRepository.SaveChanges())
             {
                 return Ok();
             }
@@ -76,9 +75,8 @@ namespace DemoWebAPI.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, User user)
         {
-            User? userDb = _dataContextEF.Users
-                .Where(x => x.UserMasterId == id && x.IsDeleted == false)
-                .FirstOrDefault();
+            User? userDb = _userRepository.GetUserById(id);
+
             if (userDb == null)
             {
                 return NotFound(new
@@ -102,7 +100,7 @@ namespace DemoWebAPI.Controllers
 
                 userDb.IsDeleted = false;
 
-                if (_dataContextEF.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -116,8 +114,7 @@ namespace DemoWebAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
-            var userDb = _dataContextEF.Users
-                .FirstOrDefault(x => x.UserMasterId == id && x.IsDeleted == false);
+            var userDb = _userRepository.GetUserById(id);
 
             if (userDb == null)
             {
@@ -130,7 +127,7 @@ namespace DemoWebAPI.Controllers
 
             userDb.IsDeleted = true;
 
-            if (_dataContextEF.SaveChanges() > 0)
+            if (_userRepository.SaveChanges())
             {
                 return Ok(new
                 {

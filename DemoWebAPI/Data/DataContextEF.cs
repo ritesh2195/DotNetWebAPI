@@ -1,4 +1,5 @@
-﻿using DemoWebAPI.Models;
+﻿using DemoWebAPI.Dtos;
+using DemoWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DemoWebAPI.Data
@@ -13,6 +14,7 @@ namespace DemoWebAPI.Data
         }
 
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<AuthMaster> AuthMasters { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -30,6 +32,10 @@ namespace DemoWebAPI.Data
             modelBuilder.Entity<User>()
                 .ToTable("UserMaster", "dbo")
                 .HasKey(u => u.UserMasterId);
+
+            modelBuilder.Entity<AuthMaster>()
+                .ToTable("AuthMaster", "dbo")
+                .HasKey(u => u.AuthMasterId);
         }
     }
 }

@@ -1,3 +1,5 @@
+using DemoWebAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -23,6 +25,8 @@ builder.Services.AddCors((options) =>
             .AllowCredentials();
     });
 });
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
