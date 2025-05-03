@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DemoWebAPI.Data
 {
-    public class DataContextEF : DbContext
+    public class DbContext : Microsoft.EntityFrameworkCore.DbContext
     {
         private readonly IConfiguration _config;
 
-        public DataContextEF(IConfiguration config)
+        public DbContext(IConfiguration config)
         {
             _config = config;
         }

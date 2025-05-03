@@ -14,12 +14,12 @@ namespace DemoWebAPI.Controllers
     {
         private readonly IConfiguration _config;
 
-        private DataContextEF _dataContextEF;
+        private DbContext _dataContextEF;
         public AuthController(IConfiguration config)
         {
             _config = config;
 
-            _dataContextEF = new DataContextEF(config);
+            _dataContextEF = new DbContext(config);
         }
 
         [HttpPost]

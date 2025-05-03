@@ -10,6 +10,5 @@ namespace DemoWebAPI.Dtos
         public string? Email { get; set; }
         public string? Gender { get; set; }
         public bool? IsActive { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }

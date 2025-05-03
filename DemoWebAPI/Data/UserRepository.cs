@@ -1,19 +1,18 @@
 ﻿using DemoWebAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace DemoWebAPI.Data
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DataContextEF _dataContextEF;
+        private readonly DbContext _dataContextEF;
         public UserRepository(IConfiguration config)
         {
-            _dataContextEF = new DataContextEF(config);
+            _dataContextEF = new DbContext(config);
         }
 
         public bool SaveChanges()
         {
-            return _dataContextEF.SaveChanges()>0;
+            return _dataContextEF.SaveChanges() > 0;
         }
 
         public void AddEntity<T>(T entityToAdd)

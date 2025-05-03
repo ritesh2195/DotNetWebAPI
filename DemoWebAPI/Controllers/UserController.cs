@@ -9,13 +9,13 @@ namespace DemoWebAPI.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private DataContextEF _dataContextEF;
+        private DbContext _dataContextEF;
 
         IUserRepository _userRepository;
 
         public UserController(IConfiguration config, IUserRepository userRepository)
         {
-            _dataContextEF = new DataContextEF(config);
+            _dataContextEF = new DbContext(config);
 
             _userRepository = userRepository;
         }
