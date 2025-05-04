@@ -16,14 +16,14 @@ namespace DemoWebAPI.Controllers
 
         private IJwtTokenService _jwtTokenService;
 
-        private DbContext _dataContextEF;
+        private AppDbContext _dataContextEF;
         public AuthController(IConfiguration config, IJwtTokenService jwtTokenService)
         {
             _config = config;
 
             _jwtTokenService = jwtTokenService;
 
-            _dataContextEF = new DbContext(config);
+            _dataContextEF = new AppDbContext(config);
         }
 
         [HttpPost("register")]

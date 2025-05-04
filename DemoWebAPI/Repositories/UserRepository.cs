@@ -1,13 +1,14 @@
-﻿using DemoWebAPI.Models;
+﻿using DemoWebAPI.Data;
+using DemoWebAPI.Models;
 
-namespace DemoWebAPI.Data
+namespace DemoWebAPI.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DbContext _dataContextEF;
+        private readonly AppDbContext _dataContextEF;
         public UserRepository(IConfiguration config)
         {
-            _dataContextEF = new DbContext(config);
+            _dataContextEF = new AppDbContext(config);
         }
 
         public bool SaveChanges()

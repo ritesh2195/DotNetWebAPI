@@ -1,6 +1,6 @@
 ﻿using DemoWebAPI.Models;
 
-namespace DemoWebAPI.Data
+namespace DemoWebAPI.Repositories
 {
     public interface IUserRepository
     {

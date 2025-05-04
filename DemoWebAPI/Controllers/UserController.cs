@@ -1,8 +1,10 @@
-﻿using DemoWebAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using DemoWebAPI.Data;
-using DemoWebAPI.Dtos;
+﻿using DemoWebAPI.Dtos;
+using DemoWebAPI.Models;
+using DemoWebAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileSystemGlobbing.Internal;
+using System.Text.RegularExpressions;
 
 namespace DemoWebAPI.Controllers
 {
@@ -11,19 +13,17 @@ namespace DemoWebAPI.Controllers
     [Authorize]
     public class UserController : ControllerBase
     {
-        private DbContext _dataContextEF;
 
         IUserRepository _userRepository;
 
         public UserController(IConfiguration config, IUserRepository userRepository)
         {
-            _dataContextEF = new DbContext(config);
 
             _userRepository = userRepository;
         }
 
         [HttpGet]
-        public IEnumerable<User> GetUser()
+        public IEnumerable<User> GetUsers()
         {
             IEnumerable<User> users = _userRepository.GetUsers();
 
@@ -54,6 +54,78 @@ namespace DemoWebAPI.Controllers
         [HttpPost]
         public IActionResult CreateUser(UserDto userDto)
         {
+            if (string.IsNullOrWhiteSpace(userDto.FirstName))
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "First Name is required."
+                });
+            }
+
+            if (userDto.FirstName.Length > 50)
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "First Name should not exceed 50 characters."
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(userDto.LastName))
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Last Name is required."
+                });
+            }
+
+            if (userDto.LastName.Length > 50)
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Last Name should not exceed 50 characters."
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(userDto.Email))
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Email is required."
+                });
+            }
+
+            if (userDto.Email.Length > 100)
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Email should not exceed 100 characters."
+                });
+            }
+
+            if (Regex.IsMatch(userDto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Email is not valid."
+                });
+            }
+
+            if (string.IsNullOrEmpty(userDto.Gender))
+            {
+                return BadRequest(new
+                {
+                    statusCode = 400,
+                    errorMessage = "Gender is required."
+                });
+            }
+
             User userDb = new User();
 
             userDb.FirstName = userDto.FirstName;
