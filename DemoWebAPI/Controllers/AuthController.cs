@@ -106,7 +106,7 @@ namespace DemoWebAPI.Controllers
 
         }
 
-        [HttpPost("login")]
+        [HttpPost("token")]
         public IActionResult Login(UserLoginDto loginDto)
         {
             AuthMaster? auth = _dataContextEF.AuthMasters
@@ -139,7 +139,7 @@ namespace DemoWebAPI.Controllers
 
                 return Ok(new
                 {
-                    message = "Login successful",
+                    message = "token generated successful",
                     token = jwtToken,
                 });
             }

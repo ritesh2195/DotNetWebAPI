@@ -5,28 +5,28 @@ namespace DemoWebAPI.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly AppDbContext _dataContextEF;
+        private readonly AppDbContext _dbContext;
         public UserRepository(IConfiguration config)
         {
-            _dataContextEF = new AppDbContext(config);
+            _dbContext = new AppDbContext(config);
         }
 
         public bool SaveChanges()
         {
-            return _dataContextEF.SaveChanges() > 0;
+            return _dbContext.SaveChanges() > 0;
         }
 
         public void AddEntity<T>(T entityToAdd)
         {
             if (entityToAdd != null)
             {
-                _dataContextEF.Add(entityToAdd);
+                _dbContext.Add(entityToAdd);
             }
         }
 
         public IEnumerable<User> GetUsers()
         {
-            List<User> users = _dataContextEF
+            List<User> users = _dbContext
                 .Users
                 .Where(x => x.IsDeleted == false)
                 .ToList();
@@ -37,7 +37,7 @@ namespace DemoWebAPI.Repositories
         public User? GetUserById(int id)
         {
 
-            return _dataContextEF.Users
+            return _dbContext.Users
                 .Where(x => x.UserMasterId == id && x.IsDeleted == false)
                 .FirstOrDefault();
         }

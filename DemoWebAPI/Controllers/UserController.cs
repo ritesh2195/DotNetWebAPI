@@ -1,10 +1,9 @@
 ﻿using DemoWebAPI.Dtos;
 using DemoWebAPI.Models;
 using DemoWebAPI.Repositories;
+using DemoWebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileSystemGlobbing.Internal;
-using System.Text.RegularExpressions;
 
 namespace DemoWebAPI.Controllers
 {
@@ -14,18 +13,22 @@ namespace DemoWebAPI.Controllers
     public class UserController : ControllerBase
     {
 
-        IUserRepository _userRepository;
+        private IUserRepository _userRepository;
 
-        public UserController(IConfiguration config, IUserRepository userRepository)
+        private IUserService _userService;
+
+        public UserController(IConfiguration config, IUserRepository userRepository, IUserService userService)
         {
 
             _userRepository = userRepository;
+
+            _userService = userService;
         }
 
         [HttpGet]
         public IEnumerable<User> GetUsers()
         {
-            IEnumerable<User> users = _userRepository.GetUsers();
+            IEnumerable<User> users = _userService.GetUsers();
 
             return users;
         }
@@ -34,188 +37,100 @@ namespace DemoWebAPI.Controllers
         public IActionResult GetUserById(int id)
         {
 
-            User? user = _userRepository.GetUserById(id);
+            User? user = _userService.GetUserById(id);
 
-            if (user == null)
+            try
+            {
+                return Ok(user);
+            }
+            catch (Exception ex)
             {
                 return NotFound(new
                 {
                     statusCode = 404,
-                    errorMessage = "User ID is not valid or deleted"
+                    errorMessage = ex.Message
                 });
-            }
-
-            else
-            {
-                return Ok(user);
             }
         }
 
         [HttpPost]
         public IActionResult CreateUser(UserDto userDto)
         {
-            if (string.IsNullOrWhiteSpace(userDto.FirstName))
+            try
+            {
+                User user = _userService.CreateUser(userDto);
+
+                return Ok(new
+                {
+                    message = "User created successfully",
+                    userId = user.UserMasterId
+                });
+            }
+
+            catch (Exception ex)
             {
                 return BadRequest(new
                 {
                     statusCode = 400,
-                    errorMessage = "First Name is required."
+                    errorMessage = ex.Message
                 });
             }
-
-            if (userDto.FirstName.Length > 50)
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "First Name should not exceed 50 characters."
-                });
-            }
-
-            if (string.IsNullOrWhiteSpace(userDto.LastName))
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Last Name is required."
-                });
-            }
-
-            if (userDto.LastName.Length > 50)
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Last Name should not exceed 50 characters."
-                });
-            }
-
-            if (string.IsNullOrWhiteSpace(userDto.Email))
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Email is required."
-                });
-            }
-
-            if (userDto.Email.Length > 100)
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Email should not exceed 100 characters."
-                });
-            }
-
-            if (Regex.IsMatch(userDto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Email is not valid."
-                });
-            }
-
-            if (string.IsNullOrEmpty(userDto.Gender))
-            {
-                return BadRequest(new
-                {
-                    statusCode = 400,
-                    errorMessage = "Gender is required."
-                });
-            }
-
-            User userDb = new User();
-
-            userDb.FirstName = userDto.FirstName;
-            userDb.LastName = userDto.LastName;
-            userDb.Email = userDto.Email;
-            userDb.Gender = userDto.Gender;
-            userDb.IsActive = userDto.IsActive;
-            userDb.IsDeleted = false;
-
-            _userRepository.AddEntity<User>(userDb);
-
-            if (_userRepository.SaveChanges())
-            {
-                return Ok();
-            }
-
-            throw new Exception("Failed to create the user");
-
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, User user)
+        public IActionResult UpdateUser(int id, UserDto userDto)
         {
-            User? userDb = _userRepository.GetUserById(id);
+            try
+            {
+                _userService.UpdateUser(id, userDto);
 
-            if (userDb == null)
+                return StatusCode(201);
+            }
+
+            catch (ArgumentException ex)
             {
                 return NotFound(new
                 {
-                    statusCode = 404,
-                    errorMessage = "User ID is not valid or deleted"
+                    statusCode = 400,
+                    errorMessage = ex.Message
                 });
             }
 
-            else if (userDb != null)
+            catch (Exception ex)
             {
-                userDb.FirstName = user.FirstName;
-
-                userDb.LastName = user.LastName;
-
-                userDb.Email = user.Email;
-
-                userDb.Gender = user.Gender;
-
-                userDb.IsActive = user.IsActive;
-
-                userDb.IsDeleted = false;
-
-                if (_userRepository.SaveChanges())
+                return StatusCode(500, new
                 {
-                    return Ok();
-                }
-
-                throw new Exception("Failed to update the user");
+                    statusCode = 500,
+                    errorMessage = ex.Message
+                });
             }
-
-            return NotFound();
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
-            var userDb = _userRepository.GetUserById(id);
-
-            if (userDb == null)
+            try
+            {
+                _userService.DeleteUser(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
             {
                 return NotFound(new
                 {
                     statusCode = 404,
-                    errorMessage = "User ID is not valid or deleted"
+                    errorMessage = ex.Message
                 });
             }
-
-            userDb.IsDeleted = true;
-
-            if (_userRepository.SaveChanges())
+            catch (Exception ex)
             {
-                return Ok(new
+                return StatusCode(500, new
                 {
-                    statusCode = 200,
-                    message = "User deleted successfully"
+                    statusCode = 500,
+                    errorMessage = ex.Message
                 });
             }
 
-            return StatusCode(500, new
-            {
-                statusCode = 500,
-                errorMessage = "Failed to delete the user"
-            });
         }
-
     }
 }
